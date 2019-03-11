@@ -28,6 +28,8 @@ use self::fxsave::domain::floating_point_unit_instruction_pointer_offset::*;
 #[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))] use ::std::arch::x86_64::_fxsave64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xrstor64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xsave64;
+#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsavec"))] use ::std::arch::x86_64::_xsavec64;
+#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsaveopt"))] use ::std::arch::x86_64::_xsaveopt64;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::CpuidResult;
 use ::std::alloc::Alloc;
 use ::std::alloc::Layout;

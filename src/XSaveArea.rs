@@ -35,16 +35,40 @@ impl<Allocator: Alloc> Drop for XSaveArea<Allocator>
 
 impl<Allocator: Alloc> XSaveArea<Allocator>
 {
+	/// Saves a `XSAVE` area into newly allocated memory.
 	#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))]
 	#[inline(always)]
 	pub fn save(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	{
+		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsave64(pointer, save_mask) })
+	}
+
+	/// Saves a `XSAVE` area, compacted, into newly allocated memory.
+	#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsavec"))]
+	#[inline(always)]
+	pub fn save_compacted(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	{
+		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsavec64(pointer, save_mask) })
+	}
+
+	/// Saves a `XSAVE` area, using options in `XCR0`, into newly allocated memory.
+	#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsaveopt"))]
+	#[inline(always)]
+	pub fn save_using_xcr0_options(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	{
+		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsaveopt64(pointer, save_mask) })
+	}
+
+	#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))]
+	#[inline(always)]
+	fn save_internal(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap, intrinsic_callback: impl Fn(*const u8, u64)) -> Result<Self, AllocErr>
 	{
 		let xsave_area_size_supported_features = extended_state_information.xsave_area_size_supported_features;
 
 		let layout = Self::layout(xsave_area_size_enabled_features);
 		let pointer = unsafe { NonNull::new_unchecked(allocator.alloc(layout)?.as_ptr() as *mut XSaveAreaLayout) };
 
-		unsafe { _xsave64(pointer.as_ptr() as *mut u8, save_mask.0) };
+		intrinsic_callback(pointer.as_ptr() as *mut u8, save_mask.0);
 
 		Self
 		{
