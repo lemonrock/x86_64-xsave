@@ -21,3 +21,26 @@ pub struct SseStatePart1
 	/// (Not restored (read) when restoring processor state).
 	pub mxcsr_register_mask: u32,
 }
+
+impl SseStatePart1
+{
+	/// Set current value of the MXCSR register.
+	///
+	/// Only affects the current thread.
+	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[inline(always)]
+	pub fn set_current_value_of_mxcsr_register(&self)
+	{
+		self.mxcsr_register_value.set_current_value_in_register()
+	}
+
+	/// Set current value of the MXCSR register.
+	///
+	/// Only affects the current thread.
+	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[inline(always)]
+	pub fn update_current_value_of_mxcsr_register(&mut self)
+	{
+		self.mxcsr_register_value.update_current_value_in_register()
+	}
+}

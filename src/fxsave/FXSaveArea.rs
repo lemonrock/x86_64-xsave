@@ -68,6 +68,15 @@ impl FXSaveArea
 		(&self.x87_state_part_1, &self.x87_state_part_2)
 	}
 
+	/// `x87` state.
+	///
+	/// The `x87` state is in two non-contiguous areas ('parts').
+	#[inline(always)]
+	pub fn x87_state_mut(&mut self) -> (&mut X87StatePart1, &mut X87StatePart2)
+	{
+		(&mut self.x87_state_part_1, &mut self.x87_state_part_2)
+	}
+
 	/// `SSE` state.
 	///
 	/// The `SSE` state is in two non-contiguous areas ('parts').
@@ -75,5 +84,14 @@ impl FXSaveArea
 	pub fn sse_state(&self) -> (&SseStatePart1, &SseStatePart2)
 	{
 		(&self.sse_state_part_1, &self.sse_state_part_2)
+	}
+
+	/// `SSE` state.
+	///
+	/// The `SSE` state is in two non-contiguous areas ('parts').
+	#[inline(always)]
+	pub fn sse_state_mut(&mut self) -> (&mut SseStatePart1, &mut SseStatePart2)
+	{
+		(&mut self.sse_state_part_1, &mut self.sse_state_part_2)
 	}
 }

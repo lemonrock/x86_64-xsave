@@ -15,8 +15,31 @@ pub struct MxcsrRegisterValue(u32);
 
 impl MxcsrRegisterValue
 {
-	// Load from memory using `LDMXCSR`.
-	// Save to memory using `STMXCSR`.
+	/// Get current value in register.
+	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[inline(always)]
+	pub fn get_current_value_in_register() -> Self
+	{
+		MxcsrRegisterValue(unsafe { _mm_getcsr() })
+	}
+
+	/// Set current value in register.
+	///
+	/// Only affects the current thread.
+	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[inline(always)]
+	pub fn set_current_value_in_register(&self)
+	{
+		unsafe { _mm_setcsr(self.0) }
+	}
+
+	/// Update the current value of the MXCSR register.
+	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[inline(always)]
+	pub fn update_current_value_in_register(&mut self)
+	{
+		*self = MxcsrRegisterValue(unsafe { _mm_getcsr() });
+	}
 
 	/// Denormals Are Zeros, `DAZ`.
 	#[inline(always)]

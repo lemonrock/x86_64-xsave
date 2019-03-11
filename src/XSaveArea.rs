@@ -22,6 +22,15 @@ impl<Allocator: Alloc> Deref for XSaveArea<Allocator>
 	}
 }
 
+impl<Allocator: Alloc> DerefMut for XSaveArea<Allocator>
+{
+	#[inline(always)]
+	fn deref_mut(&mut self) -> &mut Self::Target
+	{
+		unsafe { &mut * self.pointer.as_ptr() }
+	}
+}
+
 impl<Allocator: Alloc> Drop for XSaveArea<Allocator>
 {
 	#[inline(always)]

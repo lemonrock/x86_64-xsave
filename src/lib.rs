@@ -24,6 +24,8 @@ use self::fxsave::domain::floating_point_unit_data_pointer_offset::*;
 use self::fxsave::domain::floating_point_unit_instruction_pointer_offset::*;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid_count;
+#[cfg(all(target_arch = "x86_64", target_feature = "sse"))] use ::std::arch::x86_64::_mm_getcsr;
+#[cfg(all(target_arch = "x86_64", target_feature = "sse"))] use ::std::arch::x86_64::_mm_setcsr;
 #[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))] use ::std::arch::x86_64::_fxrstor64;
 #[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))] use ::std::arch::x86_64::_fxsave64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xrstor64;
@@ -43,6 +45,7 @@ use ::std::mem::transmute;
 use ::std::mem::uninitialized;
 use ::std::mem::zeroed;
 use ::std::ops::Deref;
+use ::std::ops::DerefMut;
 use ::std::ptr::NonNull;
 use ::std::slice::from_raw_parts;
 
@@ -67,3 +70,8 @@ pub mod state_components;
 
 /// Legacy x87 and `SSE` state saving using `FXSAVE`.
 pub mod fxsave;
+
+
+// TODO: Load / store x87 status word
+
+// TODO: _xgetbv() / _xsetbv().

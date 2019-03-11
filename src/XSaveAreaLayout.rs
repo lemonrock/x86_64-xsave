@@ -43,6 +43,22 @@ impl XSaveAreaLayout
 		}
 	}
 
+	/// `x87` state if enabled.
+	///
+	/// The `x87` state is in two non-contiguous areas ('parts').
+	#[inline(always)]
+	pub fn x87_state_mut(&mut self) -> Option<(&mut X87StatePart1, &mut X87StatePart2)>
+	{
+		if self.is_missing(StateComponent::x87)
+		{
+			None
+		}
+		else
+		{
+			Some(self.legacy_region.x87_state_mut())
+		}
+	}
+
 	/// `SSE` state if enabled.
 	///
 	/// The `SSE` state is in two non-contiguous areas ('parts').
@@ -56,6 +72,22 @@ impl XSaveAreaLayout
 		else
 		{
 			Some(self.legacy_region.sse_state())
+		}
+	}
+
+	/// `SSE` state if enabled.
+	///
+	/// The `SSE` state is in two non-contiguous areas ('parts').
+	#[inline(always)]
+	pub fn sse_state_mut(&mut self) -> Option<(&mut SseStatePart1, &mut SseStatePart2)>
+	{
+		if self.is_missing(StateComponent::SSE)
+		{
+			None
+		}
+		else
+		{
+			Some(self.legacy_region.sse_state_mut())
 		}
 	}
 
