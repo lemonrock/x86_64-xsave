@@ -16,23 +16,45 @@
 //! This is a rust library modelling the structures used in `XSAVE` and related x86 CPU operations.
 
 
+#[macro_use] extern crate arrayref;
+
+
 use self::state_component_bitmaps::*;
 use self::state_components::*;
 use self::fxsave::*;
 use self::fxsave::domain::*;
 use self::fxsave::domain::floating_point_unit_data_pointer_offset::*;
 use self::fxsave::domain::floating_point_unit_instruction_pointer_offset::*;
+
+#[cfg(target_arch = "x86")] use ::std::arch::x86::__cpuid;
+#[cfg(target_arch = "x86")] use ::std::arch::x86::__cpuid_count;
+#[cfg(all(target_arch = "x86", target_feature = "sse"))] use ::std::arch::x86::_mm_getcsr;
+#[cfg(all(target_arch = "x86", target_feature = "sse"))] use ::std::arch::x86::_mm_setcsr;
+#[cfg(all(target_arch = "x86", target_feature = "fxsr"))] use ::std::arch::x86::_fxrstor;
+#[cfg(all(target_arch = "x86", target_feature = "fxsr"))] use ::std::arch::x86::_fxsave;
+#[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_XCR_XFEATURE_ENABLED_MASK;
+#[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_xgetbv;
+#[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_xrstor;
+#[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_xsave;
+#[cfg(all(target_arch = "x86", target_feature = "xsave", target_feature = "xsavec"))] use ::std::arch::x86::_xsavec;
+#[cfg(all(target_arch = "x86", target_feature = "xsave", target_feature = "xsaveopt"))] use ::std::arch::x86::_xsaveopt;
+#[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_xsetbv;
+#[cfg(target_arch = "x86")] use ::std::arch::x86::CpuidResult;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid_count;
 #[cfg(all(target_arch = "x86_64", target_feature = "sse"))] use ::std::arch::x86_64::_mm_getcsr;
 #[cfg(all(target_arch = "x86_64", target_feature = "sse"))] use ::std::arch::x86_64::_mm_setcsr;
 #[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))] use ::std::arch::x86_64::_fxrstor64;
 #[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))] use ::std::arch::x86_64::_fxsave64;
+#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_XCR_XFEATURE_ENABLED_MASK;
+#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xgetbv;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xrstor64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xsave64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsavec"))] use ::std::arch::x86_64::_xsavec64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsaveopt"))] use ::std::arch::x86_64::_xsaveopt64;
+#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xsetbv;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::CpuidResult;
+#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))] use ::std::alloc::AllocErr;
 use ::std::alloc::Alloc;
 use ::std::alloc::Layout;
 use ::std::cmp::Ordering;
@@ -71,7 +93,11 @@ pub mod state_components;
 /// Legacy x87 and `SSE` state saving using `FXSAVE`.
 pub mod fxsave;
 
+// TODO: Load / store x87 control (?and status)? word  FLDCW  FLDENV  FNSAVE  FNSTCW  FNSTENV  FNSTSW
 
-// TODO: Load / store x87 status word
+// FSTCW FSTENV  FSTSW
+
+// FRSTOR  FSAVE
+
 
 // TODO: _xgetbv() / _xsetbv().

@@ -22,6 +22,8 @@ pub struct XSaveAreaLayout
 	/// Extended region.
 	///
 	/// The size of the extended region is determined by which state components the processor supports and which bits have been set in `XCR0` (user mode) and `IA32_XSS` `MSR` (supervisor mode) (see Section 13.3 of the Intel® 64 and IA-32 Architectures Software Developer's Manual Volume 1 (Basic Architecture)).
+	///
+	/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 	extended_region: XSaveExtendedRegion,
 }
 

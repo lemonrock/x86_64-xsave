@@ -5,6 +5,8 @@
 /// An user state component whose size can be queried.
 ///
 /// Support can be checked in the `XCR0` register.
+///
+/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum SizingQueryableUserStateComponent

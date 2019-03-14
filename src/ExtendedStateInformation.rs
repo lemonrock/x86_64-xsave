@@ -7,9 +7,13 @@
 pub struct ExtendedStateInformation
 {
 	/// State components that can be enabled in the `XCR0` register.
+	///
+	/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 	xsave_state_components_present: StateComponentBitmap,
 
 	/// Maximum size (in bytes) of an `XSAVE` area if all supported features in the processor are set as feature bits in the `XCR0` register.
+	///
+	/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 	pub xsave_area_size_supported_features: usize,
 
 	/// Maximum size (in bytes) of an `XSAVE` area required by the feature bits enabled in the `XCR0` register.
@@ -23,6 +27,8 @@ pub struct ExtendedStateInformation
 	/// Maximum size (in bytes) of an `XSAVE` area saved by the `XSAVES` instruction required by the feature bits enabled in the `XCR0` and `IA32_XSS` `MCR` registers.
 	///
 	/// May be less than `xsave_area_size_supported_features` if compaction is used.
+	///
+	/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 	pub xsaves_area_size_enabled_features: usize,
 
 	/// Has the `XSAVEOPT` instruction (`xsaveopt` feature).

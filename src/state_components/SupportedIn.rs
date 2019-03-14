@@ -8,6 +8,8 @@
 pub enum SupportedIn
 {
 	/// Supported in the extended control register 0, `XCR0`, in user mode.
+	///
+	/// To access the `XCR0` register use the struct `StateComponentBitmap`.
 	XCR0 = 0,
 
 	/// Supported in the `IA32_XSS` MSR (Model ?State Register) in supervisor mode.

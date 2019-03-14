@@ -16,7 +16,7 @@ pub struct MxcsrRegisterValue(u32);
 impl MxcsrRegisterValue
 {
 	/// Get current value in register.
-	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
 	pub fn get_current_value_in_register() -> Self
 	{
@@ -26,7 +26,7 @@ impl MxcsrRegisterValue
 	/// Set current value in register.
 	///
 	/// Only affects the current thread.
-	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
 	pub fn set_current_value_in_register(&self)
 	{
@@ -34,7 +34,7 @@ impl MxcsrRegisterValue
 	}
 
 	/// Update the current value of the MXCSR register.
-	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
 	pub fn update_current_value_in_register(&mut self)
 	{

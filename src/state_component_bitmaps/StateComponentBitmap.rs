@@ -3,12 +3,46 @@
 
 
 /// A state component bitmap.
+///
+/// Can be used to work with the extended control register, `XCR0`.
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct StateComponentBitmap(pub(crate) u64);
 
 impl StateComponentBitmap
 {
+	/// Read the value of the register `XCR0`.
+	///
+	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
+	pub fn read_from_xcr0() -> Self
+	{
+		Self(unsafe { _xgetbv(_XCR_XFEATURE_ENABLED_MASK) })
+	}
+
+	/// Read the value of the register `XCR0` AND'd with the current value of the `XINUSE` bitmap.
+	///
+	/// This can be used in conjunction with `xsaveopt` to reduce the amount of data that needs to be saved.
+	///
+	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave", target_feature = "xsaveopt"))]
+	pub fn read_from_xcr0_with_init_optimization() -> Self
+	{
+		Self(unsafe { _xgetbv(1) })
+	}
+
+	/// Write this value into the `register`.
+	///
+	/// Only allowed for kernel-mode code; use in other modes will cause a general-protected fault (`#GP`).
+	///
+	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
+	#[inline(always)]
+	pub fn write_to_xcr0(self)
+	{
+		unsafe { _xsetbv(_XCR_XFEATURE_ENABLED_MASK, self.0) }
+	}
+
 	/// Is present?
 	#[inline(always)]
 	pub fn set_is_present(&mut self, state_component: StateComponent)

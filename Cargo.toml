@@ -25,3 +25,6 @@ rpath = false
 lto = true
 debug-assertions = false
 codegen-units = 1
+
+[dependencies]
+arrayref = "^0.3.5"

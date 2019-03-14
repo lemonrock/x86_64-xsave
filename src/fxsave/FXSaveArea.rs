@@ -42,21 +42,31 @@ pub struct FXSaveArea
 impl FXSaveArea
 {
 	/// Saves this `FXSAVE` area.
-	#[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))]
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "fxsr"))]
 	#[inline(always)]
 	pub fn save() -> Self
 	{
 		let mut this = unsafe { uninitialized() };
-		unsafe { _fxsave64(&mut this as *mut Self as *mut u8) };
+		let pointer = &mut this as *mut Self as *mut u8;
+		unsafe
+		{
+			#[cfg(target_arch = "x86")] _fxsave(pointer);
+			#[cfg(target_arch = "x86_64")] _fxsave64(pointer);
+		};
 		this
 	}
 
 	/// Restores this `FXSAVE` area.
-	#[cfg(all(target_arch = "x86_64", target_feature = "fxsr"))]
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "fxsr"))]
 	#[inline(always)]
 	pub fn restore(&self)
 	{
-		unsafe { _fxrstor64(self as *const Self as *const u8) }
+		let pointer = self as *const Self as *const u8;
+		unsafe
+		{
+			#[cfg(target_arch = "x86")] _fxrstor(pointer);
+			#[cfg(target_arch = "x86_64")] _fxrstor64(pointer);
+		}
 	}
 
 	/// `x87` state.

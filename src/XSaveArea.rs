@@ -45,54 +45,86 @@ impl<Allocator: Alloc> Drop for XSaveArea<Allocator>
 impl<Allocator: Alloc> XSaveArea<Allocator>
 {
 	/// Saves a `XSAVE` area into newly allocated memory.
-	#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))]
+	///
+	/// Will only work if the Operating System (strictly speaking, code in kernel mode) has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an  invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
 	#[inline(always)]
-	pub fn save(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	pub fn save(allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
 	{
-		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsave64(pointer, save_mask) })
+		Self::save_internal(allocator, extended_state_information, save_mask, |pointer, save_mask| unsafe
+		{
+			#[cfg(target_arch = "x86")] _xsave(pointer, save_mask);
+			#[cfg(target_arch = "x86_64")] _xsave64(pointer, save_mask);
+		})
 	}
 
 	/// Saves a `XSAVE` area, compacted, into newly allocated memory.
-	#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsavec"))]
+	///
+	/// Will only work if the Operating System (strictly speaking, code in kernel mode) has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an  invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave", target_feature = "xsavec"))]
 	#[inline(always)]
-	pub fn save_compacted(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	pub fn save_compacted(allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
 	{
-		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsavec64(pointer, save_mask) })
+		Self::save_internal(allocator, extended_state_information, save_mask, |pointer, save_mask| unsafe
+		{
+			#[cfg(target_arch = "x86")] _xsavec(pointer, save_mask);
+			#[cfg(target_arch = "x86_64")] _xsavec64(pointer, save_mask);
+		})
 	}
 
 	/// Saves a `XSAVE` area, using options in `XCR0`, into newly allocated memory.
-	#[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsaveopt"))]
+	///
+	/// See also `StateComponentBitmap::read_from_xcr0()` and `StateComponentBitmap::read_from_xcr0_with_init_optimization()`.
+	///
+	/// Will only work if the Operating System (strictly speaking, code in kernel mode) has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an  invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave", target_feature = "xsaveopt"))]
 	#[inline(always)]
-	pub fn save_using_xcr0_options(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
+	pub fn save_using_xcr0_options(allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap) -> Result<Self, AllocErr>
 	{
-		Self::save_internal(allocator, extended_state_information, |pointer, save_mask| unsafe { _xsaveopt64(pointer, save_mask) })
+		Self::save_internal(allocator, extended_state_information, save_mask, |pointer, save_mask| unsafe
+		{
+			#[cfg(target_arch = "x86")] _xsaveopt(pointer, save_mask);
+			#[cfg(target_arch = "x86_64")] _xsaveopt64(pointer, save_mask);
+		})
 	}
 
-	#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))]
+	/// Restores this `XSAVE` area.
+	///
+	/// Will only work if the Operating System (strictly speaking, code in kernel mode) has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an  invalid-opcode exception (`#UD`).
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
 	#[inline(always)]
-	fn save_internal(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap, intrinsic_callback: impl Fn(*const u8, u64)) -> Result<Self, AllocErr>
+	pub fn restore(&self, mask: StateComponentBitmap)
+	{
+		let pointer = self.pointer.as_ptr() as *const XSaveAreaLayout as *const u8;
+
+		let mask = mask.0;
+		unsafe
+		{
+			#[cfg(target_arch = "x86")] _xrstor(pointer, mask);
+			#[cfg(target_arch = "x86_64")] _xrstor64(pointer, mask);
+		}
+	}
+
+	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
+	#[inline(always)]
+	fn save_internal(mut allocator: Allocator, extended_state_information: &ExtendedStateInformation, save_mask: StateComponentBitmap, intrinsic_callback: impl Fn(*mut u8, u64)) -> Result<Self, AllocErr>
 	{
 		let xsave_area_size_supported_features = extended_state_information.xsave_area_size_supported_features;
 
-		let layout = Self::layout(xsave_area_size_enabled_features);
+		let layout = Self::layout(xsave_area_size_supported_features);
 		let pointer = unsafe { NonNull::new_unchecked(allocator.alloc(layout)?.as_ptr() as *mut XSaveAreaLayout) };
 
 		intrinsic_callback(pointer.as_ptr() as *mut u8, save_mask.0);
 
-		Self
-		{
-			allocator,
-			pointer,
-			xsave_area_size_supported_features,
-		}
-	}
-
-	/// Restores this `XSAVE` area.
-	#[cfg(all(target_arch = "x86_64", target_feature = "xsave"))]
-	#[inline(always)]
-	pub fn restore(&self)
-	{
-		unsafe { _xrstor64(self.pointer.as_ptr() as *const XSaveAreaLayout as *const u8) }
+		Ok
+		(
+			Self
+			{
+				allocator,
+				pointer,
+				xsave_area_size_supported_features,
+			}
+		)
 	}
 
 	fn layout(xsave_area_size_enabled_features: usize) -> Layout
