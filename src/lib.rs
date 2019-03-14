@@ -9,6 +9,7 @@
 #![deny(unreachable_patterns)]
 #![feature(allocator_api)]
 #![feature(extern_types)]
+#![feature(stdsimd)]
 
 
 //! #x86_64-xsave
@@ -40,6 +41,7 @@ use self::fxsave::domain::floating_point_unit_instruction_pointer_offset::*;
 #[cfg(all(target_arch = "x86", target_feature = "xsave", target_feature = "xsaveopt"))] use ::std::arch::x86::_xsaveopt;
 #[cfg(all(target_arch = "x86", target_feature = "xsave"))] use ::std::arch::x86::_xsetbv;
 #[cfg(target_arch = "x86")] use ::std::arch::x86::CpuidResult;
+#[cfg(target_arch = "x86")] use ::std::arch::x86::has_cpuid;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::__cpuid_count;
 #[cfg(all(target_arch = "x86_64", target_feature = "sse"))] use ::std::arch::x86_64::_mm_getcsr;
@@ -54,6 +56,7 @@ use self::fxsave::domain::floating_point_unit_instruction_pointer_offset::*;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave", target_feature = "xsaveopt"))] use ::std::arch::x86_64::_xsaveopt64;
 #[cfg(all(target_arch = "x86_64", target_feature = "xsave"))] use ::std::arch::x86_64::_xsetbv;
 #[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::CpuidResult;
+#[cfg(target_arch = "x86_64")] use ::std::arch::x86_64::has_cpuid;
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))] use ::std::alloc::AllocErr;
 use ::std::alloc::Alloc;
 use ::std::alloc::Layout;
@@ -93,11 +96,8 @@ pub mod state_components;
 /// Legacy x87 and `SSE` state saving using `FXSAVE`.
 pub mod fxsave;
 
-// TODO: Load / store x87 control (?and status)? word  FLDCW  FLDENV  FNSAVE  FNSTCW  FNSTENV  FNSTSW
-
-// FSTCW FSTENV  FSTSW
-
-// FRSTOR  FSAVE
-
-
-// TODO: _xgetbv() / _xsetbv().
+// TODO: Load / store x87 control (?and status)? word
+//
+// FLDCW: Load x87 FPU control word from memory.
+// FSTCW/FNSTCW: Store x87 FPU control word to memory.
+// FSTSW/FNSTSW: Store x87 FPU status word to memory or another register.

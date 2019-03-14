@@ -121,7 +121,14 @@ impl ExtendedStateInformation
 			return None
 		}
 
-		Some(unsafe { __cpuid_count(EAX_EXTENDED_STATE_INFO, ecx_or_sub_leaf) })
+		if has_cpuid()
+		{
+			Some(unsafe { __cpuid_count(EAX_EXTENDED_STATE_INFO, ecx_or_sub_leaf) })
+		}
+		else
+		{
+			None
+		}
 	}
 
 	#[inline(always)]
@@ -129,16 +136,23 @@ impl ExtendedStateInformation
 	{
 		const EAX_EXTENDED_FUNCTION_INFO: u32 = 0x80000000;
 
-		let result = unsafe { __cpuid(EAX_EXTENDED_FUNCTION_INFO) };
-
-		let eax = result.eax;
-
-		if eax == 0
+		if has_cpuid()
 		{
-			return false
-		}
+			let result = unsafe { __cpuid(EAX_EXTENDED_FUNCTION_INFO) };
 
-		let maximum_eax_value = eax - EAX_EXTENDED_FUNCTION_INFO;
-		eax_or_leaf <= maximum_eax_value
+			let eax = result.eax;
+
+			if eax == 0
+			{
+				return false
+			}
+
+			let maximum_eax_value = eax - EAX_EXTENDED_FUNCTION_INFO;
+			eax_or_leaf <= maximum_eax_value
+		}
+		else
+		{
+			false
+		}
 	}
 }

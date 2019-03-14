@@ -30,11 +30,7 @@ impl FloatingPointOrMMRegisterValue
 
 	/// Floating point value (little endian).
 	///
-	/// x86 extended precision format (80-bit).
-	///
-	/// * 1-bit for sign (bit 79); if set, the value is negative.
-	/// * 15-bits for exponent (bits 78 to 64).
-	/// * 64-bits for the significand (bits 63 to 0), of which 1-bit (bit 63) in the 'integer' part.
+	/// See Section 8.2 and Figure 8-13 in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1, for the layout of the possible x87 data types that can reside in these bytes.
 	#[inline(always)]
 	pub fn floating_point_value(&self) -> &[u8; 10]
 	{
@@ -43,11 +39,7 @@ impl FloatingPointOrMMRegisterValue
 
 	/// Floating point value (little endian).
 	///
-	/// x86 extended precision format (80-bit).
-	///
-	/// * 1-bit for sign (bit 79); if set, the value is negative.
-	/// * 15-bits for exponent (bits 78 to 64).
-	/// * 64-bits for the significand (bits 63 to 0), of which 1-bit (bit 63) in the 'integer' part.
+	/// See Section 8.2 and Figure 8-13 in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1, for the layout of the possible x87 data types that can reside in these bytes.
 	#[inline(always)]
 	pub fn floating_point_value_mut(&mut self) -> &mut [u8; 10]
 	{

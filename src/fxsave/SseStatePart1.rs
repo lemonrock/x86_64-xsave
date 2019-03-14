@@ -12,6 +12,8 @@ pub struct SseStatePart1
 	/// Value of the `MXCSR` register.
 	///
 	/// Part of the `SSE` state.
+	///
+	/// If any reserved bits are set, then a restore of this value will cause a general-protection fault (`#GP`).
 	pub mxcsr_register_value: MxcsrRegisterValue,
 
 	/// `MXCSR` register mask.

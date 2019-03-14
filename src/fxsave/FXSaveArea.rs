@@ -2,11 +2,15 @@
 // Copyright © 2019 The developers of x86_64-xsave. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/lemonrock/x86_64-xsave/master/COPYRIGHT.
 
 
+/// Used to save and restore the state of the FPU.
 /// Must be 16-byte aligned (enforced).
 ///
 /// Always 512 bytes in size.
 ///
 /// Documented in Table 10-2 of the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1 and repeated in the documentation of the `XSAVE` area in Section 13.4.
+///
+/// The legacy instructions `FSAVE` and `FNSAVE` (save FPU state) and `FRSTOR` (restore FPU state) also work with with this layout.
+/// The legacy instructions `FSTENV` and `FNSTENV` (save FPU environment) and `FLDENV` (restore FPU environment) also work with the layout in `x87_state_part_1`.
 #[derive(Default, Debug, Clone)]
 #[repr(C, align(16))]
 pub struct FXSaveArea
@@ -42,6 +46,10 @@ pub struct FXSaveArea
 impl FXSaveArea
 {
 	/// Saves this `FXSAVE` area.
+	///
+	/// Used to save and restore the state of the FPU (x87) and MMX (SSE).
+	///
+	/// Unlike the legacy instructions `FSAVE` and `FNSAVE`, this does not change the state of the FPU (x87) and MMX (SSE) units, registers and associated data.
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "fxsr"))]
 	#[inline(always)]
 	pub fn save() -> Self
@@ -57,6 +65,8 @@ impl FXSaveArea
 	}
 
 	/// Restores this `FXSAVE` area.
+	///
+	/// If any reserved bits are set in `sse_state().0.mxcsr_register_value`, then a restore of this value will cause a general-protection fault (`#GP`).
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "fxsr"))]
 	#[inline(always)]
 	pub fn restore(&self)

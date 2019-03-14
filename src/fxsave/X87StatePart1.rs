@@ -5,6 +5,10 @@
 /// The `x87` state exists in two, non-contiguous areas ('parts').
 ///
 /// This is part 1.
+///
+/// Note that this layout is the same as would be produced by the legacy instructions `FSTENV` and `FNSTENV` (save FPU environment).
+///
+/// This layout can also be restored using the legacy instruction `FLDENV` (restore FPU environment).
 #[derive(Default, Debug, Clone)]
 #[repr(C, align(16))]
 pub struct X87StatePart1
