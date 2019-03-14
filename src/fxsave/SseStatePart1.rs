@@ -31,9 +31,9 @@ impl SseStatePart1
 	/// Only affects the current thread.
 	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
 	#[inline(always)]
-	pub fn set_current_value_of_mxcsr_register(&self)
+	pub fn restore_current_value_of_mxcsr_register(&self)
 	{
-		self.mxcsr_register_value.set_current_value_in_register()
+		self.mxcsr_register_value.restore_current_value_in_register()
 	}
 
 	/// Set current value of the MXCSR register.
@@ -41,8 +41,8 @@ impl SseStatePart1
 	/// Only affects the current thread.
 	#[cfg(all(target_arch = "x86_64", target_feature = "sse"))]
 	#[inline(always)]
-	pub fn update_current_value_of_mxcsr_register(&mut self)
+	pub fn update_from_current_value_of_mxcsr_register(&mut self)
 	{
-		self.mxcsr_register_value.update_current_value_in_register()
+		self.mxcsr_register_value.update_from_current_value_in_register()
 	}
 }

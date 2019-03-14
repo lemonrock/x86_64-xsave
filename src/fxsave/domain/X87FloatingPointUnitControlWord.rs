@@ -9,6 +9,95 @@ pub struct X87FloatingPointUnitControlWord(u16);
 
 impl X87FloatingPointUnitControlWord
 {
+	/// Reads the control word after raising any pending unmasked floating point exceptions.
+	///
+	/// Uses the `FSTCW` instruction; see <https://github.com/HJLebbink/asm-dude/wiki/FSTCW_FNSTCW>.
+	#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+	#[inline(always)]
+	pub fn save_after_raising_any_pending_unmasked_floating_point_exceptions() -> Self
+	{
+		let mut control_word: u16 = unsafe { uninitialized() };
+		let control_word_pointer = &mut control_word;
+
+		unsafe
+		{
+			asm!
+			(
+				"fstcw $0"
+				:
+					// Output constraints.
+					"=*m"(control_word_pointer)
+				:
+					// Input constraints.
+				:
+					// Clobbers.
+				:
+					// Options.
+					"volatile"
+			);
+		}
+
+		Self(control_word)
+	}
+
+	/// Reads the control word.
+	///
+	/// Uses the `FNSTCW` instruction; see <https://github.com/HJLebbink/asm-dude/wiki/FSTCW_FNSTCW>.
+	#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+	#[inline(always)]
+	pub fn save() -> Self
+	{
+		let mut control_word: u16 = unsafe { uninitialized() };
+		let control_word_pointer = &mut control_word;
+
+		unsafe
+		{
+			asm!
+			(
+				"fnstcw $0"
+				:
+					// Output constraints.
+					"=*m"(control_word_pointer)
+				:
+					// Input constraints.
+				:
+					// Clobbers.
+				:
+					// Options.
+					"volatile"
+			);
+		}
+
+		Self(control_word)
+	}
+
+	/// Writes the control word.
+	///
+	/// Uses the `FLDCW` instruction; see <https://github.com/HJLebbink/asm-dude/wiki/FLDCW>.
+	#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+	#[inline(always)]
+	pub fn restore(mut self)
+	{
+		let control_word_pointer = &mut self.0;
+		unsafe
+		{
+			asm!
+			(
+				"fnstcw $0"
+				:
+					// Output constraints.
+				:
+					// Input constraints.
+					"*m"(control_word_pointer)
+				:
+					// Clobbers.
+				:
+					// Options.
+					"volatile"
+			);
+		}
+	}
+
 	/// Invalid Operation, `IM`.
 	///
 	/// One of the 6 exception flag mask bits.

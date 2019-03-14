@@ -18,7 +18,7 @@ impl MxcsrRegisterValue
 	/// Get current value in register.
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
-	pub fn get_current_value_in_register() -> Self
+	pub fn save_current_value_in_register() -> Self
 	{
 		MxcsrRegisterValue(unsafe { _mm_getcsr() })
 	}
@@ -28,7 +28,7 @@ impl MxcsrRegisterValue
 	/// Only affects the current thread.
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
-	pub fn set_current_value_in_register(&self)
+	pub fn restore_current_value_in_register(&self)
 	{
 		unsafe { _mm_setcsr(self.0) }
 	}
@@ -36,7 +36,7 @@ impl MxcsrRegisterValue
 	/// Update the current value of the MXCSR register.
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "sse"))]
 	#[inline(always)]
-	pub fn update_current_value_in_register(&mut self)
+	pub fn update_from_current_value_in_register(&mut self)
 	{
 		*self = MxcsrRegisterValue(unsafe { _mm_getcsr() });
 	}

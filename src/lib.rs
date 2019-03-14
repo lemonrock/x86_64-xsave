@@ -8,6 +8,7 @@
 #![deny(missing_docs)]
 #![deny(unreachable_patterns)]
 #![feature(allocator_api)]
+#![feature(asm)]
 #![feature(extern_types)]
 #![feature(stdsimd)]
 
@@ -74,6 +75,8 @@ use ::std::ops::DerefMut;
 use ::std::ptr::NonNull;
 use ::std::slice::from_raw_parts;
 
+// target_env sgx
+
 
 include!("ExtendedStateInformation.rs");
 include!("MxcsrRegisterValue.rs");
@@ -99,5 +102,4 @@ pub mod fxsave;
 // TODO: Load / store x87 control (?and status)? word
 //
 // FLDCW: Load x87 FPU control word from memory.
-// FSTCW/FNSTCW: Store x87 FPU control word to memory.
 // FSTSW/FNSTSW: Store x87 FPU status word to memory or another register.

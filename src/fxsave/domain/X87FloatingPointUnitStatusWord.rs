@@ -9,6 +9,68 @@ pub struct X87FloatingPointUnitStatusWord(u16);
 
 impl X87FloatingPointUnitStatusWord
 {
+	/// Reads the control word after raising any pending unmasked floating point exceptions.
+	///
+	/// Uses the non-`AX` register form of the `FSTSW` instruction (ie always writes to memory); see <https://github.com/HJLebbink/asm-dude/wiki/FSTSW_FNSTSW>.
+	#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+	#[inline(always)]
+	pub fn save_after_raising_any_pending_unmasked_floating_point_exceptions() -> Self
+	{
+		let mut control_word: u16 = unsafe { uninitialized() };
+		let control_word_pointer = &mut control_word;
+
+		unsafe
+		{
+			asm!
+			(
+				"fstsw $0"
+				:
+					// Output constraints.
+					"=*m"(control_word_pointer)
+				:
+					// Input constraints.
+				:
+					// Clobbers.
+				:
+					// Options.
+					"volatile"
+			);
+		}
+
+		Self(control_word)
+	}
+
+	/// Reads the control word.
+	///
+	/// Uses the non-`AX` register form of the `FNSTSW` instruction (ie always writes to memory); see <https://github.com/HJLebbink/asm-dude/wiki/FSTSW_FNSTSW>.
+	#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+	#[inline(always)]
+	pub fn save() -> Self
+	{
+		let mut control_word: u16 = unsafe { uninitialized() };
+		let control_word_pointer = &mut control_word;
+
+		unsafe
+		{
+			asm!
+			(
+				"fnstsw $0"
+				:
+					// Output constraints.
+					"=*m"(control_word_pointer)
+				:
+					// Input constraints.
+				:
+					// Clobbers.
+				:
+					// Options.
+					"volatile"
+			);
+		}
+
+		Self(control_word)
+	}
+
 	/// Invalid Operation exception flag, `IE`.
 	///
 	/// One of the 6 exception flags that can be controlled by the status word.

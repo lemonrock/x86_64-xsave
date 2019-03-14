@@ -15,7 +15,7 @@ impl StateComponentBitmap
 	///
 	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
-	pub fn read_from_xcr0() -> Self
+	pub fn save_from_xcr0() -> Self
 	{
 		Self(unsafe { _xgetbv(_XCR_XFEATURE_ENABLED_MASK) })
 	}
@@ -26,7 +26,7 @@ impl StateComponentBitmap
 	///
 	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave", target_feature = "xsaveopt"))]
-	pub fn read_from_xcr0_with_init_optimization() -> Self
+	pub fn save_from_xcr0_with_init_optimization() -> Self
 	{
 		Self(unsafe { _xgetbv(1) })
 	}
@@ -38,7 +38,7 @@ impl StateComponentBitmap
 	/// Will only work if the Operating System has set bit 18 in the register `CR4.OSXSAVE`, otherwise usage will cause an invalid-opcode exception (`#UD`).
 	#[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "xsave"))]
 	#[inline(always)]
-	pub fn write_to_xcr0(self)
+	pub fn restore_to_xcr0(self)
 	{
 		unsafe { _xsetbv(_XCR_XFEATURE_ENABLED_MASK, self.0) }
 	}
